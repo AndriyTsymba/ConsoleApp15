@@ -11,16 +11,11 @@ namespace ConsoleApp15
 
         static void Main()
         {
-            int[] numbers = { -7, 14, 21, -3, 49, 7, 5, 14, -7, 28, 35, -35, 0, 42, -42 };
+            string text = "Цей текст містить слово 'програмування' серед інших слів.";
 
-            Action<int[]> showUniqueNegativeNumbers = arr =>
-            {
-                var uniqueNegatives = arr.Where(n => n < 0).Distinct();
-                Console.WriteLine("Унікальні негативні числа: " + string.Join(", ", uniqueNegatives));
-            };
+            Func<string, string, bool> containsWord = (txt, word) => txt.Contains(word, StringComparison.OrdinalIgnoreCase);
 
-            showUniqueNegativeNumbers(numbers);
+            Console.WriteLine($"Чи містить текст слово 'програмування': {containsWord(text, "програмування")}");
         }
     }
-
 }
