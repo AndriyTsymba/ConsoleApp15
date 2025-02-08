@@ -6,34 +6,84 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp15
 {
-    internal class Program
+    class Backpack
     {
+        public string Color { get; private set; }
+        public string Brand { get; private set; }
+        public string Manufacturer { get; private set; }
+        public string Fabric { get; private set; }
+        public double Weight { get; private set; }
+        public double Volume { get; private set; }
+        public List<Item> Contents { get; private set; } = new List<Item>();
+        private double currentVolume = 0;
 
+        public event Action<Item> OnItemAdded;
+
+        public Backpack(string color, string brand, string manufacturer, string fabric, double weight, double volume)
+        {
+            Color = color;
+            Brand = brand;
+            Manufacturer = manufacturer;
+            Fabric = fabric;
+            Weight = weight;
+            Volume = volume;
+
+            OnItemAdded += delegate (Item item)
+            {
+                Console.WriteLine($"Додано: {item.Name} (Об'єм: {item.ItemVolume} л)");
+            };
+        }
+        public void AddItem(Item item)
+        {
+            if (currentVolume + item.ItemVolume > Volume)
+            {
+                throw new InvalidOperationException($"Неможливо додати {item.Name}, перевищено обсяг рюкзака!");
+            }
+
+            Contents.Add(item);
+            currentVolume += item.ItemVolume;
+            OnItemAdded?.Invoke(item);
+        }
+        public void ShowContents()
+        {
+            Console.WriteLine($"Рюкзак {Brand} ({Color}, {Volume} л) містить:");
+            foreach (var item in Contents)
+            {
+                Console.WriteLine($"- {item.Name} (Об'єм: {item.ItemVolume} л)");
+            }
+        }
+    }
+    class Item
+    {
+        public string Name { get; }
+        public double ItemVolume { get; }
+
+        public Item(string name, double itemVolume)
+        {
+            Name = name;
+            ItemVolume = itemVolume;
+        }
+    }
+    class Program
+    {
         static void Main()
         {
-            Func<string, (int, int, int)> getRainbowColor = delegate (string color)
+            Backpack myBackpack = new Backpack("Чорний", "Nike", "Nike Inc.", "Поліестер", 1.5, 20);
+
+            try
             {
-                var colors = new Dictionary<string, (int, int, int)>
-        {
-                { "червоний", (255, 0, 0) },
-                { "оранжевий", (255, 165, 0) },
-                { "жовтий", (255, 255, 0) },
-                { "зелений", (0, 128, 0) },
-                { "блакитний", (0, 255, 255) },
-                { "синій", (0, 0, 255) },
-                { "фіолетовий", (128, 0, 128) }
-        };
-
-                return colors.ContainsKey(color.ToLower()) ? colors[color.ToLower()] : (0, 0, 0);
-            };
-
-            string[] rainbowColors = { "червоний", "оранжевий", "жовтий", "зелений", "блакитний", "синій", "фіолетовий" };
-
-            foreach (var color in rainbowColors)
-            {
-                var (r, g, b) = getRainbowColor(color);
-                Console.WriteLine($"{color} -> RGB({r}, {g}, {b})");
+                myBackpack.AddItem(new Item("Книга", 2));
+                myBackpack.AddItem(new Item("Ноутбук", 5));
+                myBackpack.AddItem(new Item("Пляшка води", 1.5));
+                myBackpack.AddItem(new Item("Одяг", 8));
+                myBackpack.AddItem(new Item("Спальний мішок", 10));
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Помилка: {ex.Message}");
+            }
+
+            myBackpack.ShowContents();
         }
     }
 }
